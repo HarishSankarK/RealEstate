@@ -1,0 +1,102 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h2 class="text-3xl font-bold text-white">User Profile</h2>
+    <button class="close-btn" (click)="navigateHome()">×</button>
+  </div>
+  <div class="profile-content" *ngIf="user; else loading">
+    <div class="profile-image-section">
+      <img *ngIf="user.profileImage" [src]="user.profileImage" alt="Profile Image" class="profile-image">
+      <img *ngIf="!user.profileImage" src="https://via.placeholder.com/150" alt="Default Profile" class="profile-image">
+      <input *ngIf="isEditing" type="file" accept="image/*" (change)="onFileSelected($event)" class="file-input">
+    </div>
+    <div class="profile-details">
+      <div class="profile-field">
+        <label class="text-lg font-semibold">First Name:</label>
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.firstName }}</p>
+        <input *ngIf="isEditing" [(ngModel)]="user.firstName" class="form-input" required>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">Last Name:</label>
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.lastName }}</p>
+        <input *ngIf="isEditing" [(ngModel)]="user.lastName" class="form-input" required>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">Email:</label>
+        <p class="text-gray-800">{{ user.email }}</p>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">Phone:</label>
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.phone }}</p>
+        <input *ngIf="isEditing" [(ngModel)]="user.phone" class="form-input" required>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">Role:</label>
+        <p class="text-gray-800">{{ user.role }}</p>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">Street:</label>
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.address.street }}</p>
+        <input *ngIf="isEditing" [(ngModel)]="user.address.street" class="form-input" required>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">City:</label>
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.address.city }}</p>
+        <input *ngIf="isEditing" [(ngModel)]="user.address.city" class="form-input" required>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">State:</label>
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.address.state }}</p>
+        <input *ngIf="isEditing" [(ngModel)]="user.address.state" class="form-input" required>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">ZIP:</label>
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.address.zip }}</p>
+        <input *ngIf="isEditing" [(ngModel)]="user.address.zip" class="form-input" required>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">Country:</label>
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.address.country }}</p>
+        <input *ngIf="isEditing" [(ngModel)]="user.address.country" class="form-input" required>
+      </div>
+      <div class="profile-field">
+        <label class="text-lg font-semibold">Notifications:</label>
+        <input *ngIf="isEditing" type="checkbox" [(ngModel)]="user.preferences.notifications">
+        <p *ngIf="!isEditing" class="text-gray-800">{{ user.preferences.notifications ? 'Enabled' : 'Disabled' }}</p>
+      </div>
+      <div class="profile-actions">
+        <button *ngIf="!isEditing" (click)="toggleEdit()" class="edit-btn">Edit Profile</button>
+        <button *ngIf="isEditing" (click)="saveProfile()" class="save-btn">Save Changes</button>
+        <button *ngIf="isEditing" (click)="toggleEdit()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+    <div class="properties-section">
+      <h3 class="text-2xl font-bold text-gray-800">My Properties</h3>
+      <div class="properties-grid" *ngIf="properties.length > 0; else noProperties">
+        <div class="property-card" *ngFor="let property of properties">
+          <img [src]="property.image" alt="{{ property.title }}" class="property-image">
+          <div class="property-details">
+            <h4 class="text-xl font-semibold">{{ property.title }}</h4>
+            <p><strong class="text-gray-700">Category:</strong> {{ property.category }}</p>
+            <p><strong class="text-gray-700">Price:</strong> ${{ property.price }}</p>
+            <p><strong class="text-gray-700">Location:</strong> {{ property.location }}</p>
+            <p><strong class="text-gray-700">Type:</strong> {{ property.propertyType }}</p>
+            <p><strong class="text-gray-700">Bedrooms:</strong> {{ property.bedrooms }}</p>
+            <p><strong class="text-gray-700">Bathrooms:</strong> {{ property.bathrooms }}</p>
+            <p><strong class="text-gray-700">Area:</strong> {{ property.area }} sq ft</p>
+            <p><strong class="text-gray-700">Furnishing:</strong> {{ property.furnishing }}</p>
+            <p><strong class="text-gray-700">Availability:</strong> {{ property.availability }}</p>
+          </div>
+        </div>
+      </div>
+      <ng-template #noProperties>
+        <p class="text-gray-600 italic">No properties posted yet.</p>
+      </ng-template>
+    </div>
+  </div>
+  <ng-template #loading>
+    <p class="text-center text-gray-500">Loading profile...</p>
+  </ng-template>
+  <div class="error" *ngIf="error">
+    <p class="text-red-600 font-medium">{{ error }}</p>
+  </div>
+</div>

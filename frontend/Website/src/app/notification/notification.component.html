@@ -1,0 +1,75 @@
+<div class="notification-panel" *ngIf="showPanel" [@slideIn]>
+  <div class="notification-header">
+    <h3>Notifications <i class="fas fa-bell"></i></h3>
+    <button class="close-btn" (click)="closePanel()" (keydown.enter)="closePanel()" [@buttonHover] aria-label="Close notification panel">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <div class="notification-content">
+    <!-- Booking Request Form -->
+    <div *ngIf="isBookingRequest && propertyId && userEmail && propertyDetails" class="booking-request-form">
+      <h4>Send Booking Request</h4>
+      <p><strong>Property ID:</strong> {{ propertyId }}</p>
+      <p><strong>Your Email:</strong> {{ userEmail }}</p>
+      <p><strong>Owner Email:</strong> {{ propertyDetails.postedByEmail }}</p>
+      <textarea [(ngModel)]="bookingMessage" placeholder="Enter your booking message..." rows="3" class="booking-message-input" aria-label="Booking message"></textarea>
+      <button (click)="sendBookingRequest()" [disabled]="sending" class="action-btn send-request-btn" [@buttonHover] aria-label="Send booking request">
+        {{ sending ? 'Sending...' : 'Send Request' }}
+      </button>
+      <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+    </div>
+
+    <!-- Notifications List -->
+    <div *ngIf="!isBookingRequest" class="notifications-list">
+      <h4>Your Notifications</h4>
+      <div *ngIf="userNotifications.length === 0" class="no-notifications">
+        <p>No notifications available.</p>
+      </div>
+      <div *ngFor="let notification of userNotifications | slice:0:userNotifications.length" class="notification-item" [ngClass]="{'accepted': notification.status === 'accepted', 'rejected': notification.status === 'rejected'}">
+        <p>{{ notification.message }}</p>
+        <span class="notification-time">{{ notification.createdAt | date:'short' }}</span>
+        <div *ngIf="notification.status === 'pending' && notification.recipientEmail === userEmail && !notification.response" class="request-actions">
+          <button (click)="handleResponse(notification, 'accept')" class="action-btn accept-btn" [@buttonHover] aria-label="Accept booking request">Accept</button>
+          <button (click)="handleResponse(notification, 'reject')" class="action-btn reject-btn" [@buttonHover] aria-label="Reject booking request">Reject</button>
+        </div>
+        <div *ngIf="notification.status === 'accepted' && notification.recipientEmail === userEmail" class="request-actions">
+          <button *ngIf="notification.brochure" (click)="onViewBrochure(notification)" class="action-btn view-btn" [@buttonHover] aria-label="View brochure">View Brochure</button>
+          <button *ngIf="!notification.paymentCompleted" (click)="initiatePayment(notification)" class="action-btn pay-btn" [@buttonHover] aria-label="Pay now">Pay Now</button>
+          <button *ngIf="notification.paymentCompleted" class="action-btn pay-btn" disabled aria-label="Payment completed">Paid</button>
+        </div>
+        <div *ngIf="needsSignIn(notification)" class="response-status">
+          <p>Please sign in as {{ notification.recipientEmail }} to proceed with payment.</p>
+        </div>
+        <div *ngIf="notification.status === 'rejected'" class="response-status">
+          <p>Request Rejected</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Popup for Response Notification -->
+<div *ngIf="showPopup && selectedNotification" class="popup-overlay" [@popupFade]>
+  <div class="response-popup">
+    <h3>Notification</h3>
+    <p>{{ popupMessage }}</p>
+    <div *ngIf="selectedNotification.isResponse && selectedNotification.response?.action === 'accept' && selectedNotification.propertyDetails">
+      <h4>Property Details</h4>
+      <div class="property-details">
+        <img [src]="selectedNotification.propertyDetails.image ?? 'https://via.placeholder.com/300x200'" [alt]="selectedNotification.propertyDetails.title ?? 'Unknown Property'" class="property-image" />
+        <p><strong>Title:</strong> {{ selectedNotification.propertyDetails.title ?? 'N/A' }}</p>
+        <p><strong>Price:</strong> ₹{{ selectedNotification.propertyDetails.price ?? 0 }}</p>
+        <p><strong>Location:</strong> {{ selectedNotification.propertyDetails.location ?? 'N/A' }}</p>
+        <p><strong>Bedrooms:</strong> {{ selectedNotification.propertyDetails.bedrooms ?? 'N/A' }}</p>
+        <p><strong>Bathrooms:</strong> {{ selectedNotification.propertyDetails.bathrooms ?? 'N/A' }}</p>
+        <p><strong>Area:</strong> {{ selectedNotification.propertyDetails.area ?? 0 }} m²</p>
+        <p><strong>Owner:</strong> {{ selectedNotification.propertyDetails.ownerName ?? 'Unknown' }} ({{ selectedNotification.propertyDetails.postedByEmail ?? 'N/A' }})</p>
+      </div>
+      <button *ngIf="showPayment && !selectedNotification?.paymentCompleted" (click)="initiatePayment(selectedNotification)" class="action-btn pay-btn" [@buttonHover] aria-label="Pay now">Pay Amount</button>
+      <button *ngIf="selectedNotification?.paymentCompleted" class="action-btn pay-btn" disabled aria-label="Payment completed">Paid</button>
+    </div>
+    <button (click)="closePopup()" class="close-btn" [@buttonHover] aria-label="Close notification popup">Close</button>
+  </div>
+</div>

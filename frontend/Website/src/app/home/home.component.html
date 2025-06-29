@@ -1,0 +1,281 @@
+<div class="home-container">
+  <header class="home-header">
+    <h1>RealEstateHub</h1>
+    <div class="user-actions">
+      <button *ngIf="currentUserEmail" (click)="navigateToMyProperties()" (keydown.enter)="navigateToMyProperties()" class="my-properties-btn" [@buttonHover]>My Properties <i class="fas fa-home"></i></button>
+      <button (click)="navigateToLandlord()" (keydown.enter)="navigateToLandlord()" class="landlord-btn" [@buttonHover]>Post a Property <i class="fas fa-camera"></i></button>
+      <button *ngIf="currentUserEmail" (click)="goToProfile()" (keydown.enter)="goToProfile()" class="profile-btn" title="View Profile" [@buttonHover]>
+        <i class="fas fa-user-circle"></i>
+      </button>
+      <button *ngIf="currentUserEmail" (click)="signOut()" (keydown.enter)="signOut()" class="signout-btn" [@buttonHover]>Sign Out <i class="fas fa-sign-out-alt"></i></button>
+      <div class="icon-wrapper">
+        <i *ngIf="currentUserEmail" class="fas fa-comment chat-icon" title="Chat" (click)="toggleChatPanel()" (keydown.enter)="toggleChatPanel()" tabindex="0" role="button" aria-label="Open chat panel"></i>
+        <span *ngIf="unreadMessagesCount > 0" class="badge chat-badge">{{ unreadMessagesCount }}</span>
+      </div>
+      <div class="icon-wrapper">
+        <i *ngIf="currentUserEmail" class="fas fa-bell notification-icon" title="Notifications" (click)="toggleNotificationPanel()" (keydown.enter)="toggleNotificationPanel()" tabindex="0" role="button" aria-label="Open notification panel"></i>
+        <span *ngIf="unreadNotificationsCount > 0" class="badge notification-badge">{{ unreadNotificationsCount }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="search-bar" [@fadeIn]>
+    <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="filterProperties()" placeholder="Search by title or location..." class="search-input" aria-label="Search properties">
+    <button class="search-btn" (click)="filterProperties()" [@buttonHover]><i class="fas fa-search"></i></button>
+  </div>
+
+  <div class="main-content">
+    <aside class="filter-sidebar">
+      <h3 class="font-des">Filter Properties <i class="fas fa-filter"></i></h3>
+      <div class="filter-group">
+        <label for="propertyTypeSelect">Property Type</label>
+        <select id="propertyTypeSelect" [(ngModel)]="filters.propertyType" (ngModelChange)="filterProperties()" class="filter-select">
+          <option value="">Any</option>
+          <option *ngFor="let type of propertyTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="priceRangeSelect">Price Range</label>
+        <select id="priceRangeSelect" [(ngModel)]="filters.priceRange" (ngModelChange)="filterProperties()" class="filter-select">
+          <option value="">Any</option>
+          <option *ngFor="let range of priceRanges" [value]="range.label">{{ range.label }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="bedroomsSelect">Bedrooms</label>
+        <select id="bedroomsSelect" [(ngModel)]="filters.bedrooms" (ngModelChange)="filterProperties()" class="filter-select">
+          <option value="">Any</option>
+          <option *ngFor="let bedroom of bedroomOptions" [value]="bedroom">{{ bedroom }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="purposeSelect">Purpose</label>
+        <select id="purposeSelect" [(ngModel)]="filters.purpose" (ngModelChange)="onPurposeChange()" class="filter-select">
+          <option value="">Any</option>
+          <option *ngFor="let purpose of purposeOptions" [value]="purpose">{{ purpose }}</option>
+        </select>
+      </div>
+      <button class="clear-filter-btn" (click)="resetFilters()" (keydown.enter)="resetFilters()" [@buttonHover]>Clear Filters <i class="fas fa-eraser"></i></button>
+      <button class="save-search-btn" (click)="saveSearch()" (keydown.enter)="saveSearch()" [@buttonHover]>Save Search <i class="fas fa-save"></i></button>
+    </aside>
+
+    <section class="properties-section" *ngIf="!loading; else loadingTemplate">
+      <div class="property-grid">
+        <div class="property-card" *ngFor="let property of filteredProperties" (click)="viewDetails(property)" (keydown.enter)="viewDetails(property)" style="cursor: pointer;" tabindex="0" role="button" aria-label="View property details">
+          <img [src]="property.image || 'https://via.placeholder.com/300x200'" alt="{{ property.title }}" class="property-image" (error)="onImageError($event, property)" />
+          <div class="property-details">
+            <h3>{{ property.price | currency:'₹' }}</h3>
+            <p>{{ property.location }}</p>
+            <p><strong>Category:</strong> {{ property.category || 'N/A' }}</p>
+            <p><strong>Posted By:</strong> {{ property.ownerName || 'Unknown' }} ({{ property.postedByEmail }})</p>
+            <p><strong>Contact:</strong> {{ property.ownerPhone || 'N/A' }}</p>
+            <div class="icon-details" [@fadeIn]>
+              <span><i class="fas fa-bed"></i> {{ property.bedrooms }}</span>
+              <span><i class="fas fa-bath"></i> {{ property.bathrooms }}</span>
+              <span><i class="fas fa-ruler-combined"></i> {{ property.area }} m²</span>
+            </div>
+            <div class="property-actions">
+              <button (click)="toggleFavorite(property); $event.stopPropagation()" (keydown.enter)="toggleFavorite(property); $event.stopPropagation()" class="action-btn favorite-btn" [ngClass]="{'favorited': property.isFavorite}" [@buttonHover] title="Toggle Favorite">
+                <i class="fas" [ngClass]="{'fa-heart': property.isFavorite, 'fa-heart-o': !property.isFavorite}"></i> {{ property.isFavorite ? 'Favorited' : 'Favorite' }}
+              </button>
+              <button *ngIf="currentUserEmail && currentUserEmail !== property.postedByEmail" (click)="chatWithAgent(property); $event.stopPropagation()" (keydown.enter)="chatWithAgent(property); $event.stopPropagation()" class="action-btn chat-agent-btn" [@buttonHover] title="Chat with Agent">
+                <i class="fas fa-comment"></i> Chat
+              </button>
+              <button *ngIf="currentUserEmail && currentUserEmail === property.postedByEmail" class="action-btn chat-agent-btn disabled" disabled title="You cannot chat about your own property">
+                <i class="fas fa-comment"></i> Chat
+              </button>
+              <button (click)="viewDetails(property); $event.stopPropagation()" (keydown.enter)="viewDetails(property); $event.stopPropagation()" class="action-btn view-details-btn" [@buttonHover] title="View Details">
+                <i class="fas fa-eye"></i> View
+              </button>
+              <button *ngIf="property.category === 'Rent' && property.availability === 'available' && currentUserEmail && currentUserEmail !== property.postedByEmail" (click)="bookNow(property); $event.stopPropagation()" (keydown.enter)="bookNow(property); $event.stopPropagation()" class="action-btn book-now-btn" [@buttonHover] title="Book Now">
+                <i class="fas fa-book"></i> Book Now
+              </button>
+              <div *ngIf="property.category === 'Rent' && property.availability === 'available' && !currentUserEmail" class="action-message">
+                <span class="sign-in-message" (click)="router.navigate(['/signin']); $event.stopPropagation()" title="Sign in to book this property">Sign in to book</span>
+              </div>
+              <div *ngIf="property.category === 'Rent' && property.availability === 'available' && currentUserEmail && currentUserEmail === property.postedByEmail" class="action-message">
+                <span class="unavailable-message" title="You cannot book your own property">Your Property</span>
+              </div>
+              <div *ngIf="property.category === 'Rent' && property.availability !== 'available'" class="action-message">
+                <span class="unavailable-message" title="This property is not available">Not Available</span>
+              </div>
+              <button (click)="toggleCompare(property); $event.stopPropagation()" (keydown.enter)="toggleCompare(property); $event.stopPropagation()" class="action-btn compare-btn" [ngClass]="{'compared': isInCompare(property._id)}" [@buttonHover] title="Toggle Compare">
+                <i class="fas fa-balance-scale"></i> {{ isInCompare(property._id) ? 'Remove' : 'Compare' }}
+              </button>
+              <button (click)="verifyProperty(property); $event.stopPropagation()" (keydown.enter)="verifyProperty(property); $event.stopPropagation()" class="action-btn verify-btn" [@buttonHover] title="Verify Property">
+                <i class="fas fa-check-circle"></i> Verify Property
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <ng-template #loadingTemplate>
+      <div class="loading" [@fadeIn]>Loading properties...</div>
+    </ng-template>
+  </div>
+
+  <div *ngIf="showBookingPopup" class="popup-overlay" [@popupFade]>
+    <div class="booking-popup">
+      <h3>Confirm Booking</h3>
+      <div class="popup-details">
+        <img [src]="selectedProperty?.image || 'https://via.placeholder.com/300x200'" alt="{{ selectedProperty?.title }}" class="popup-image" />
+        <div class="popup-info">
+          <p><strong>Title:</strong> {{ selectedProperty?.title || 'N/A' }}</p>
+          <p><strong>Price:</strong> {{ selectedProperty?.price | currency:'₹' }}</p>
+          <p><strong>Location:</strong> {{ selectedProperty?.location || 'N/A' }}</p>
+          <p><strong>Bedrooms:</strong> {{ selectedProperty?.bedrooms || 'N/A' }}</p>
+          <p><strong>Bathrooms:</strong> {{ selectedProperty?.bathrooms || 'N/A' }}</p>
+          <p><strong>Area:</strong> {{ selectedProperty?.area }} m²</p>
+          <p><strong>Owner:</strong> {{ selectedProperty?.ownerName || 'Unknown' }} ({{ selectedProperty?.postedByEmail }})</p>
+        </div>
+      </div>
+      <div class="popup-actions">
+        <button (click)="confirmBooking()" class="confirm-btn" [@buttonHover]>Confirm</button>
+        <button (click)="cancelBooking()" class="cancel-btn" [@buttonHover]>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-panel" *ngIf="showChatPanel">
+    <div class="chat-sidebar">
+      <h3>Chats <i class="fas fa-comments"></i></h3>
+      <div class="chat-items">
+        <div *ngFor="let chat of chats" class="chat-item" (click)="selectChat(chat)" (keydown.enter)="selectChat(chat)" [class.active]="selectedChat && chat._id === selectedChat._id" tabindex="0" role="button" aria-label="Select chat">
+          <img [src]="getOtherParticipantImage(chat)" alt="Profile" class="avatar" (error)="onImageError($event, chat)">
+          <div class="chat-info">
+            <p class="chat-name">{{ getOtherParticipant(chat) }}</p>
+            <p class="chat-preview">
+              {{ (chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text : 'No messages') | slice:0:20 }}{{ chat.messages.length > 0 ? '...' : '' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-main" *ngIf="selectedChat">
+      <div class="chat-header">
+        <div class="chat-header-user">
+          <img [src]="getOtherParticipantImage(selectedChat)" alt="Profile" class="chat-header-avatar" (error)="onImageError($event, selectedChat)">
+          <h3>Chatting with {{ getOtherParticipant(selectedChat) }} <i class="fas fa-user-friends"></i></h3>
+        </div>
+        <button class="close-btn" (click)="showChatPanel = false" (keydown.enter)="showChatPanel = false" [@buttonHover] aria-label="Close chat panel">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="property-details-section" *ngIf="selectedChat.propertyDetails">
+        <div class="property-details-content">
+          <div class="property-details-image-wrapper">
+            <img [src]="selectedChat.propertyDetails.image" alt="{{ selectedChat.propertyDetails.title }}" class="property-details-image">
+            <div class="image-glow"></div>
+          </div>
+          <div class="property-details-text">
+            <h4>{{ selectedChat.propertyDetails.title }}</h4>
+            <div class="property-details-info">
+              <p><i class="fas fa-dollar-sign"></i> {{ selectedChat.propertyDetails.price | currency:'₹' }}</p>
+              <p><i class="fas fa-map-marker-alt"></i> {{ selectedChat.propertyDetails.location }}</p>
+              <p><i class="fas fa-tag"></i> {{ selectedChat.propertyDetails.category || 'N/A' }}</p>
+              <p><i class="fas fa-bed"></i> {{ selectedChat.propertyDetails.bedrooms }} Bedrooms</p>
+              <p><i class="fas fa-bath"></i> {{ selectedChat.propertyDetails.bathrooms }} Bathrooms</p>
+              <p><i class="fas fa-ruler-combined"></i> {{ selectedChat.propertyDetails.area }} m²</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-messages">
+        <div
+          *ngFor="let message of selectedChat.messages"
+          class="message"
+          [ngClass]="{'sent': message.sender === currentUserEmail, 'received': message.sender !== currentUserEmail}"
+        >
+          <div class="message-content">
+            <p>{{ message.text }}</p>
+            <span class="message-time">{{ message.createdAt | date:'shortTime' }}</span>
+          </div>
+          <div class="message-glow"></div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <textarea
+          [(ngModel)]="newMessage"
+          placeholder="Type a message..."
+          rows="1"
+          (keyup.enter)="sendMessage()"
+          (input)="autoResize($event)"
+          aria-label="Type a message"
+        ></textarea>
+        <button class="send-btn" (click)="sendMessage()" (keydown.enter)="sendMessage()" [@buttonHover] aria-label="Send message">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="send-icon">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare-panel" *ngIf="showComparePanel" [@slideIn]>
+    <div class="compare-header">
+      <h3>Compare Properties <i class="fas fa-balance-scale"></i></h3>
+      <button class="close-btn" (click)="clearCompare()" (keydown.enter)="clearCompare()" [@buttonHover] aria-label="Close compare panel">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="compare-content">
+      <div class="compare-property" *ngFor="let property of compareProperties">
+        <img [src]="property.image || 'https://via.placeholder.com/300x200'" alt="{{ property.title }}" class="compare-image">
+        <div class="compare-details">
+          <h4>{{ property.title }}</h4>
+          <p><strong>Price:</strong> {{ property.price | currency:'₹' }}</p>
+          <p><strong>Location:</strong> {{ property.location }}</p>
+          <p><strong>Bedrooms:</strong> {{ property.bedrooms }}</p>
+          <p><strong>Bathrooms:</strong> {{ property.bathrooms }}</p>
+          <p><strong>Area:</strong> {{ property.area }} m²</p>
+          <button class="remove-btn" (click)="removeFromCompare(property._id)" (keydown.enter)="removeFromCompare(property._id)" [@buttonHover]>Remove</button>
+        </div>
+      </div>
+      <button class="clear-all-btn" (click)="clearCompare()" (keydown.enter)="clearCompare()" [@buttonHover]>Clear All</button>
+    </div>
+  </div>
+
+  <app-notification
+    *ngIf="showNotificationPanel"
+    [showPanel]="showNotificationPanel"
+    [userEmail]="currentUserEmail"
+    [isBookingRequest]="isBookingRequest"
+    [propertyId]="selectedPropertyId"
+    [propertyDetails]="selectedPropertyDetails"
+    [notifications]="notifications"
+    (notificationAction)="onOwnerAction($event)"
+    (notificationSent)="onNotificationSent($event)"
+    (viewBrochure)="viewBrochure($event)"
+    (payNow)="payNow($event)"
+  ></app-notification>
+
+  <div *ngIf="showBrochurePopup" class="popup-overlay" [@popupFade]>
+    <div class="booking-popup brochure-popup">
+      <h3>Property Brochure</h3>
+      <div class="popup-details">
+        <pre class="brochure-content" [@brochurePulse]>{{ brochureContent }}</pre>
+      </div>
+      <div class="popup-actions">
+        <button *ngIf="currentNotification && !currentNotification.paymentCompleted" (click)="handlePayNow(currentNotification)" class="confirm-btn" [@buttonHover]>Pay Now</button>
+        <button *ngIf="currentNotification && currentNotification.paymentCompleted" class="confirm-btn" [@buttonHover] disabled>Paid</button>
+        <button (click)="showBrochurePopup = false" class="cancel-btn" [@buttonHover]>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showVerifyAlert" class="verify-alert-overlay" [@verifyAlertFade]>
+    <div class="verify-alert-box">
+      <h3>Verification Alert</h3>
+      <p>Property ID copied to clipboard! Redirecting to the governmental website for verification.</p>
+      <div class="verify-alert-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+    </div>
+  </div>
+
+  <footer class="home-footer">
+    <p>© 2025 RealEstateHub. All rights reserved.</p>
+  </footer>
+</div>

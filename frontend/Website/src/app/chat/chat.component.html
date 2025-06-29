@@ -1,0 +1,69 @@
+<div class="chat-container">
+  <div class="chat-sidebar">
+    <div class="sidebar-header">
+      <h2>Chats</h2>
+    </div>
+    <div class="chat-search">
+      <input type="text" placeholder="Search chats..." />
+    </div>
+    <div class="chat-list">
+      <div
+        *ngFor="let chat of chats"
+        class="chat-item"
+        [class.active]="selectedChat && chat._id === selectedChat._id"
+        (click)="selectChat(chat)"
+        (keydown)="onKeydown($event, chat)"
+        tabindex="0"
+      >
+        <div class="avatar"></div>
+        <div class="chat-info">
+          <p class="chat-name">{{ getOtherParticipant(chat) }}</p>
+          <p class="chat-preview">
+            {{ (chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text : 'No messages') | slice:0:20 }}{{ chat.messages.length > 0 ? '...' : '' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-main">
+    <div class="chat-header" *ngIf="selectedChat; else noChat">
+      <h3>Chatting with {{ getOtherParticipant(selectedChat) }}</h3>
+      <button class="close-btn" (click)="navigateHome()">×</button>
+    </div>
+    <ng-template #noChat>
+      <div class="chat-header">
+        <h3>Select a chat</h3>
+        <button class="close-btn" (click)="navigateHome()">×</button>
+      </div>
+    </ng-template>
+
+    <div class="chat-messages" *ngIf="selectedChat">
+      <div
+        *ngFor="let message of selectedChat.messages"
+        class="message"
+        [ngClass]="{'sent': message.sender === currentUserEmail, 'received': message.sender !== currentUserEmail}"
+      >
+        <div class="message-content">
+          <p>{{ message.text }}</p>
+          <span class="message-time">{{ message.createdAt | date:'shortTime' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input" *ngIf="selectedChat">
+      <textarea
+        [(ngModel)]="newMessage"
+        placeholder="Type a message..."
+        rows="1"
+        (keyup.enter)="sendMessage()"
+        (input)="autoResize($event)"
+      ></textarea>
+      <button class="send-btn" (click)="sendMessage()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="send-icon">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

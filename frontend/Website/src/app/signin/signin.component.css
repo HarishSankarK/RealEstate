@@ -1,0 +1,235 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
+/* Ensure box-sizing is applied globally */
+* {
+  box-sizing: border-box;
+}
+
+.signin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ece9e6, #ffffff);
+  padding: 20px;
+}
+
+.signin-card {
+  display: flex;
+  width: 900px;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.signin-card:hover {
+  transform: translateY(-5px);
+}
+
+.image-section {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(45deg, #1a2a6c, #b21f1f);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  text-align: center;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5); /* Increased opacity for better text readability */
+  z-index: 1;
+}
+
+.header-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  opacity: 0.7;
+}
+
+.welcome-text {
+  position: relative;
+  z-index: 2;
+}
+
+.image-section h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.image-section p {
+  margin: 10px 0 0;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.form-section {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  background: #f9fafb;
+}
+
+h3 {
+  text-align: center;
+  color: #1a2a6c;
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #ffffff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #1a2a6c;
+  box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
+}
+
+.error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 6px;
+  display: block;
+}
+
+.signin-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(90deg, #1a2a6c, #b21f1f);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.signin-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.signin-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.additional-links {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.forgot-password, .signup-link {
+  color: #1a2a6c;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.forgot-password:hover, .signup-link:hover {
+  text-decoration: underline;
+  color: #b21f1f;
+}
+
+.success-message {
+  color: #15803d;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  background: #dcfce7;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.error-message {
+  color: #dc2626;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  background: #fee2e2;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .signin-card {
+    flex-direction: column;
+  }
+  .image-section,
+  .form-section {
+    flex: none;
+    width: 100%;
+  }
+  .image-section {
+    padding: 20px;
+  }
+  .image-section h2 {
+    font-size: 24px;
+  }
+  .image-section p {
+    font-size: 14px;
+  }
+  .form-section {
+    padding: 20px;
+  }
+}

@@ -1,0 +1,118 @@
+<div class="my-properties-container">
+  <header class="my-properties-header">
+    <h1>My Properties</h1>
+    <button class="back-btn" (click)="navigateToHomepage()">
+      <i class="fas fa-arrow-left"></i> Back to Home
+    </button>
+  </header>
+
+  <section class="properties-section">
+    <h2>My Listed Properties</h2>
+    @if (loading) {
+      <p>Loading properties...</p>
+    } @else if (errorMessage) {
+      <p class="error-message">{{ errorMessage }}</p>
+    } @else if (myProperties.length === 0) {
+      <p>No listed properties found.</p>
+    } @else {
+      <div class="properties-grid">
+        @for (property of myProperties; track property.id) {
+          <div class="property-card" [@cardAnimation]>
+            <img [src]="property.image || 'https://via.placeholder.com/300x200'" alt="{{ property.title }}" (error)="property.image = 'https://via.placeholder.com/300x200'" />
+            <div class="property-info">
+              <h3>{{ property.title }}</h3>
+              <p><i class="fas fa-map-marker-alt"></i> {{ property.location }}</p>
+              <p><i class="fas fa-dollar-sign"></i> {{ property.price | currency:'₹' }}</p>
+              <p><i class="fas fa-tag"></i> {{ property.category }}</p>
+              <p><i class="fas fa-bed"></i> {{ property.bedrooms }} Bedrooms</p>
+              <p><i class="fas fa-bath"></i> {{ property.bathrooms }} Bathrooms</p>
+              <p><i class="fas fa-ruler-combined"></i> {{ property.area }} m²</p>
+              <div class="property-actions">
+                <button (click)="viewDetails(property)">View Details</button>
+                <button (click)="openEditModal(property)">Edit</button>
+                <button (click)="deleteProperty(property)" class="delete-btn">Delete</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="properties-section">
+    <h2>My Residential Properties</h2>
+    @if (residentialProperties.length === 0) {
+      <p>No residential properties found.</p>
+    } @else {
+      <div class="properties-grid">
+        @for (property of residentialProperties; track property.id) {
+          <div class="property-card" [@cardAnimation]>
+            <img [src]="property.image || 'https://via.placeholder.com/300x200'" alt="{{ property.title }}" (error)="property.image = 'https://via.placeholder.com/300x200'" />
+            <div class="property-info">
+              <h3>{{ property.title }}</h3>
+              <p><i class="fas fa-map-marker-alt"></i> {{ property.location }}</p>
+              <p><i class="fas fa-dollar-sign"></i> {{ property.price | currency:'₹' }}</p>
+              <p><i class="fas fa-tag"></i> {{ property.category }}</p>
+              <p><i class="fas fa-bed"></i> {{ property.bedrooms }} Bedrooms</p>
+              <p><i class="fas fa-bath"></i> {{ property.bathrooms }} Bathrooms</p>
+              <p><i class="fas fa-ruler-combined"></i> {{ property.area }} m²</p>
+              <div class="property-actions">
+                <button (click)="viewDetails(property)">View Details</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Edit Modal -->
+  @if (showEditModal && selectedProperty) {
+    <div class="modal-overlay" [@modalAnimation]>
+      <div class="modal-content">
+        <h2>Edit Property</h2>
+        <form (ngSubmit)="updateProperty()">
+          <div class="form-group">
+            <label for="title">Title</label>
+            <input id="title" [(ngModel)]="selectedProperty.title" name="title" required />
+          </div>
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input id="location" [(ngModel)]="selectedProperty.location" name="location" required />
+          </div>
+          <div class="form-group">
+            <label for="price">Price (₹)</label>
+            <input id="price" type="number" [(ngModel)]="selectedProperty.price" name="price" required />
+          </div>
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" [(ngModel)]="selectedProperty.category" name="category" required>
+              <option value="Rent">Rent</option>
+              <option value="Sale">Sale</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="bedrooms">Bedrooms</label>
+            <input id="bedrooms" type="number" [(ngModel)]="selectedProperty.bedrooms" name="bedrooms" required />
+          </div>
+          <div class="form-group">
+            <label for="bathrooms">Bathrooms</label>
+            <input id="bathrooms" type="number" [(ngModel)]="selectedProperty.bathrooms" name="bathrooms" required />
+          </div>
+          <div class="form-group">
+            <label for="area">Area (m²)</label>
+            <input id="area" type="number" [(ngModel)]="selectedProperty.area" name="area" required />
+          </div>
+          <div class="form-group">
+            <label for="image">Image URL</label>
+            <input id="image" [(ngModel)]="selectedProperty.image" name="image" />
+          </div>
+          <div class="modal-actions">
+            <button type="submit">Save Changes</button>
+            <button type="button" (click)="closeEditModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

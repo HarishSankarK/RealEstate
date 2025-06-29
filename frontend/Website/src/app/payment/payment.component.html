@@ -1,0 +1,107 @@
+<div class="payment-overlay">
+  <div class="payment-form" [@fadeIn] *ngIf="showPaymentForm">
+    <header class="payment-header">
+      <h1>Payment for Property</h1>
+    </header>
+
+    <div class="payment-details">
+      <h3>Property Details</h3>
+      <p><strong>Title:</strong> {{ title || 'N/A' }}</p>
+      <p><strong>Amount:</strong> ₹{{ amount || 0 }}</p>
+      <p><strong>Location:</strong> {{ location || 'N/A' }}</p>
+      <p><strong>Bedrooms:</strong> {{ bedrooms || 'N/A' }}</p>
+      <p><strong>Bathrooms:</strong> {{ bathrooms || 'N/A' }}</p>
+      <p><strong>Area:</strong> {{ area || 0 }} m²</p>
+      <p><strong>Owner:</strong> {{ ownerName || 'Unknown' }} ({{ ownerEmail || 'N/A' }})</p>
+    </div>
+
+    <form [formGroup]="paymentForm" (ngSubmit)="processPayment()" class="payment-form-content">
+      <h3>Payment Information</h3>
+      <div class="form-group">
+        <label for="cardNumber">Card Number</label>
+        <input
+          id="cardNumber"
+          formControlName="cardNumber"
+          appRestrictInput="cardNumber"
+          type="text"
+          placeholder="1234 5678 9012 3456"
+          maxlength="19"
+          aria-label="Card Number"
+        />
+        <div *ngIf="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched" class="error-message">
+          <div *ngIf="paymentForm.get('cardNumber')?.errors?.['required']">Card Number is required.</div>
+          <div *ngIf="paymentForm.get('cardNumber')?.errors?.['pattern']">Must be 16 digits (e.g., 1234 5678 9012 3456).</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="expiryDate">Expiry Date</label>
+        <input
+          id="expiryDate"
+          formControlName="expiryDate"
+          appRestrictInput="expiryDate"
+          type="text"
+          placeholder="MM/YY"
+          maxlength="5"
+          aria-label="Expiry Date"
+        />
+        <div *ngIf="paymentForm.get('expiryDate')?.invalid && paymentForm.get('expiryDate')?.touched" class="error-message">
+          <div *ngIf="paymentForm.get('expiryDate')?.errors?.['required']">Expiry Date is required.</div>
+          <div *ngIf="paymentForm.get('expiryDate')?.errors?.['pattern']">Must be in MM/YY format (e.g., 12/25).</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="cvv">CVV</label>
+        <input
+          id="cvv"
+          formControlName="cvv"
+          appRestrictInput="numbers"
+          type="text"
+          placeholder="123"
+          maxlength="4"
+          aria-label="CVV"
+        />
+        <div *ngIf="paymentForm.get('cvv')?.invalid && paymentForm.get('cvv')?.touched" class="error-message">
+          <div *ngIf="paymentForm.get('cvv')?.errors?.['required']">CVV is required.</div>
+          <div *ngIf="paymentForm.get('cvv')?.errors?.['pattern']">Must be 3 or 4 digits.</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="cardHolderName">Cardholder Name</label>
+        <input
+          id="cardHolderName"
+          formControlName="cardHolderName"
+          appRestrictInput="letters"
+          type="text"
+          placeholder="John Doe"
+          aria-label="Cardholder Name"
+        />
+        <div *ngIf="paymentForm.get('cardHolderName')?.invalid && paymentForm.get('cardHolderName')?.touched" class="error-message">
+          <div *ngIf="paymentForm.get('cardHolderName')?.errors?.['required']">Cardholder Name is required.</div>
+          <div *ngIf="paymentForm.get('cardHolderName')?.errors?.['pattern']">Only letters and spaces are allowed.</div>
+          <div *ngIf="paymentForm.get('cardHolderName')?.errors?.['minlength']">Must be at least 2 characters.</div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button
+          type="submit"
+          [disabled]="processing || paymentForm.invalid"
+          class="pay-btn"
+          [@buttonHover]
+        >
+          {{ processing ? 'Processing...' : 'Pay Now' }}
+        </button>
+        <button
+          type="button"
+          (click)="cancelPayment()"
+          [disabled]="processing"
+          class="cancel-btn"
+          [@buttonHover]
+        >
+          Cancel
+        </button>
+      </div>
+      <p *ngIf="successMessage" class="success-message">{{ successMessage | capitalize }}</p>
+      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+    </form>
+  </div>
+</div>

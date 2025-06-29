@@ -1,0 +1,85 @@
+<div class="signup-container">
+  <div class="signup-card">
+    <div class="image-section">
+      <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=500&q=80" alt="New Home" class="header-image">
+      <h2>Join Our Community</h2>
+      <p>Find your perfect home today</p>
+    </div>
+    <div class="form-section">
+      <h3>Create Your Account</h3>
+      <form (ngSubmit)="onSubmit()" #signupForm="ngForm" autocomplete="on">
+        <div class="form-row">
+          <div class="form-group">
+            <input type="text" [(ngModel)]="user.firstName" name="firstName" placeholder="First Name" required class="form-input" autocomplete="given-name">
+            <span class="error" *ngIf="submitted && !user.firstName">Required</span>
+          </div>
+          <div class="form-group">
+            <input type="text" [(ngModel)]="user.lastName" name="lastName" placeholder="Last Name" required class="form-input" autocomplete="family-name">
+            <span class="error" *ngIf="submitted && !user.lastName">Required</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <input type="email" [(ngModel)]="user.email" name="email" placeholder="Email Address" required class="form-input" autocomplete="email">
+          <span class="error" *ngIf="submitted && !user.email">Required</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <input type="password" [(ngModel)]="user.password" name="password" placeholder="Password" required class="form-input" autocomplete="new-password">
+            <span class="error" *ngIf="submitted && !user.password">Required</span>
+          </div>
+          <div class="form-group">
+            <input type="password" [(ngModel)]="user.confirmPassword" name="confirmPassword" placeholder="Confirm Password" required class="form-input" autocomplete="new-password">
+            <span class="error" *ngIf="submitted && user.password !== user.confirmPassword">Passwords must match</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <input type="tel" [(ngModel)]="user.phone" name="phone" placeholder="Phone Number" required class="form-input" autocomplete="tel">
+          <span class="error" *ngIf="submitted && !user.phone">Required</span>
+        </div>
+
+        <h4>Address</h4>
+        <div class="form-group">
+          <input type="text" [(ngModel)]="user.address.street" name="street" placeholder="Street Address" required class="form-input" autocomplete="street-address">
+          <span class="error" *ngIf="submitted && !user.address.street">Required</span>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <input type="text" [(ngModel)]="user.address.city" name="city" placeholder="City" required class="form-input" autocomplete="address-level2">
+            <span class="error" *ngIf="submitted && !user.address.city">Required</span>
+          </div>
+          <div class="form-group">
+            <input type="text" [(ngModel)]="user.address.state" name="state" placeholder="State" required class="form-input" autocomplete="address-level1">
+            <span class="error" *ngIf="submitted && !user.address.state">Required</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <input type="text" [(ngModel)]="user.address.zip" name="zip" placeholder="ZIP Code" required class="form-input" autocomplete="postal-code">
+            <span class="error" *ngIf="submitted && !user.address.zip">Required</span>
+          </div>
+          <div class="form-group">
+            <input type="text" [(ngModel)]="user.address.country" name="country" placeholder="Country" required class="form-input" autocomplete="country-name">
+            <span class="error" *ngIf="submitted && !user.address.country">Required</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="user.preferences.notifications" name="notifications">
+            Receive Email Notifications
+          </label>
+        </div>
+
+        <button type="submit" class="signup-btn" [disabled]="signupForm.invalid && submitted">Sign Up</button>
+      </form>
+
+      <div class="additional-links">
+        <p>Already have an account? <a href="/signin" class="signin-link">Sign In</a></p>
+      </div>
+    </div>
+  </div>
+</div>

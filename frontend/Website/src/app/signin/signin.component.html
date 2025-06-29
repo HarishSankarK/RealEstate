@@ -1,0 +1,70 @@
+<div class="signin-container">
+  <div class="signin-card">
+    <div class="image-section">
+      <div class="image-overlay"></div>
+      <img src="https://cdn.pixabay.com/photo/2016/11/29/03/53/architecture-1867187_960_720.jpg" alt="Modern Architecture" class="header-image">
+      <div class="welcome-text">
+        <h2>Welcome Home</h2>
+        <p>Find your perfect space with us</p>
+      </div>
+    </div>
+    <div class="form-section">
+      <h3>Sign In to Your Account</h3>
+      <form (ngSubmit)="onSubmit(signinForm)" #signinForm="ngForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <i class="fas fa-envelope"></i>
+            <input 
+              type="email" 
+              id="email"
+              [(ngModel)]="user.email" 
+              name="email" 
+              placeholder="Enter your email" 
+              required 
+              email
+              class="form-input"
+              aria-label="Email Address">
+          </div>
+          <span class="error" *ngIf="submitted && signinForm.controls['email']?.invalid && signinForm.controls['email']?.touched">
+            <span *ngIf="signinForm.controls['email']?.errors?.['required']">Email is required</span>
+            <span *ngIf="signinForm.controls['email']?.errors?.['email']">Please enter a valid email</span>
+          </span>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input 
+              type="password" 
+              id="password"
+              [(ngModel)]="user.password" 
+              name="password" 
+              placeholder="Enter your password" 
+              required
+              class="form-input"
+              aria-label="Password">
+          </div>
+          <span class="error" *ngIf="submitted && signinForm.controls['password']?.invalid && signinForm.controls['password']?.touched">
+            Password is required
+          </span>
+        </div>
+        <button 
+          type="submit" 
+          class="signin-btn" 
+          [disabled]="signinForm.invalid || isSubmitting">
+          <span *ngIf="!isSubmitting">Sign In</span>
+          <span *ngIf="isSubmitting">
+            <i class="fas fa-spinner fa-spin"></i> Signing In...
+          </span>
+        </button>
+      </form>
+      <div class="additional-links">
+        <a type="button" (click)="goToForgotPassword()" class="forgot-password">Forgot Password?</a>
+        <p>Don't have an account? <a type="button" (click)="goToSignup()" class="signup-link">Sign Up</a></p>
+      </div>
+      <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+    </div>
+  </div>
+</div>

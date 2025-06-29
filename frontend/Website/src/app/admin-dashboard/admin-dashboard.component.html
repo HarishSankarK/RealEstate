@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Header -->
+    <header class="admin-header">
+      <h1>Admin Dashboard</h1>
+      <nav class="admin-nav">
+        <button (click)="setActiveTab('overview')" class="tab-btn" [class.active]="activeTab === 'overview'">
+          Overview
+        </button>
+        <button (click)="setActiveTab('users')" class="tab-btn" [class.active]="activeTab === 'users'">
+          Manage Users
+        </button>
+        <button (click)="setActiveTab('properties')" class="tab-btn" [class.active]="activeTab === 'properties'">
+          Manage Properties
+        </button>
+        <button (click)="setActiveTab('activity')" class="tab-btn" [class.active]="activeTab === 'activity'">
+          Activity Log
+        </button>
+      </nav>
+    </header>
+
+    <!-- Messages -->
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    <div *ngIf="successMessage" class="success-message">
+      {{ successMessage }}
+    </div>
+
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'" class="admin-content">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Users</h3>
+          <p>{{ totalUsers }}</p>
+        </div>
+        <div class="stat-card">
+          <h3>Total Properties</h3>
+          <p>{{ totalProperties }}</p>
+        </div>
+        <div class="stat-card">
+          <h3>Active Listings</h3>
+          <p>{{ activeListings }}</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 chart-container">
+          <h3>Properties by Category</h3>
+          <canvas #propertyChart></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>User Roles Distribution</h3>
+          <canvas #userRoleChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manage Users Tab -->
+    <div *ngIf="activeTab === 'users'" class="admin-content">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-white">Manage Users</h3>
+        <div class="flex space-x-4">
+          <input [(ngModel)]="userSearchQuery" placeholder="Search users..." class="search-input">
+          <button (click)="exportUsersToCSV()" class="export-btn">Export to CSV</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created At</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of filteredUsers">
+              <td>{{ user.email }}</td>
+              <td>{{ user.firstName }} {{ user.lastName }}</td>
+              <td>{{ user.phone }}</td>
+              <td>{{ user.role }}</td>
+              <td>{{ user.status }}</td>
+              <td>{{ user.createdAt | date:'short' }}</td>
+              <td>{{ user.lastLogin ? (user.lastLogin | date:'short') : 'N/A' }}</td>
+              <td class="flex space-x-2">
+                <button (click)="showUserDetails(user)" class="action-btn view-btn">View</button>
+                <button (click)="deleteUser(user.email)" class="action-btn delete-btn">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Manage Properties Tab -->
+    <div *ngIf="activeTab === 'properties'" class="admin-content">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-white">Manage Properties</h3>
+        <div class="flex space-x-4">
+          <input [(ngModel)]="propertySearchQuery" placeholder="Search properties..." class="search-input">
+          <button (click)="exportPropertiesToCSV()" class="export-btn">Export to CSV</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Posted By</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let property of filteredProperties">
+              <td>{{ property._id }}</td>
+              <td>{{ property.title }}</td>
+              <td>{{ property.category }}</td>
+              <td>{{ property.price }}</td>
+              <td>{{ property.location }}</td>
+              <td>{{ property.status }}</td>
+              <td>{{ property.postedByEmail }}</td>
+              <td>{{ property.createdAt | date:'short' }}</td>
+              <td class="flex space-x-2">
+                <button (click)="showPropertyDetails(property)" class="action-btn view-btn">View</button>
+                <button (click)="verifyProperty(property)" class="action-btn verify-btn">
+                  Verify
+                </button>
+                <button (click)="viewPropertyDocument(property)" class="action-btn document-btn">View Document</button>
+                <button (click)="deleteProperty(property._id)" class="action-btn delete-btn">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Activity Log Tab -->
+    <div *ngIf="activeTab === 'activity'" class="admin-content">
+      <h3 class="text-xl font-semibold text-white mb-6">Admin Activity Log</h3>
+      <ul class="activity-list">
+        <li *ngFor="let log of activityLogs" class="activity-item">
+          <p>{{ log.message }}</p>
+          <p class="timestamp">{{ log.timestamp | date:'medium' }}</p>
+        </li>
+      </ul>
+    </div>
+
+    <!-- User Details Modal -->
+    <div *ngIf="selectedUser" class="modal-overlay">
+      <div class="modal-content">
+        <h3>User Details</h3>
+        <p><strong>Email:</strong> {{ selectedUser.email }}</p>
+        <p><strong>Name:</strong> {{ selectedUser.firstName }} {{ selectedUser.lastName }}</p>
+        <p><strong>Phone:</strong> {{ selectedUser.phone }}</p>
+        <p><strong>Role:</strong> {{ selectedUser.role }}</p>
+        <p><strong>Status:</strong> {{ selectedUser.status }}</p>
+        <p><strong>Created At:</strong> {{ selectedUser.createdAt | date:'medium' }}</p>
+        <p><strong>Last Login:</strong> {{ selectedUser.lastLogin ? (selectedUser.lastLogin | date:'medium') : 'N/A' }}</p>
+        <div class="mt-4">
+          <label>Change Role:</label>
+          <select [(ngModel)]="selectedUser.role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button (click)="updateUserRole(selectedUser.email, selectedUser.role)" class="action-btn update-btn">
+            Update Role
+          </button>
+          <button (click)="closeModal()" class="close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property Details Modal -->
+    <div *ngIf="selectedProperty" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Property Details</h3>
+        <p><strong>ID:</strong> {{ selectedProperty._id }}</p>
+        <p><strong>Title:</strong> {{ selectedProperty.title }}</p>
+        <p><strong>Category:</strong> {{ selectedProperty.category }}</p>
+        <p><strong>Price:</strong> {{ selectedProperty.price }}</p>
+        <p><strong>Location:</strong> {{ selectedProperty.location }}</p>
+        <p><strong>Status:</strong> {{ selectedProperty.status }}</p>
+        <p><strong>Posted By:</strong> {{ selectedProperty.postedByEmail }}</p>
+        <p><strong>Created At:</strong> {{ selectedProperty.createdAt | date:'medium' }}</p>
+        <div class="mt-4">
+          <label>Change Status:</label>
+          <select [(ngModel)]="selectedProperty.status">
+            <option value="available">Available</option>
+            <option value="sold">Sold</option>
+            <option value="rented">Rented</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button (click)="updatePropertyStatus(selectedProperty._id, selectedProperty.status)" class="action-btn update-btn">
+            Update Status
+          </button>
+          <button (click)="closeModal()" class="close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property Document Modal -->
+    <div *ngIf="selectedPropertyDocument" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Property Document</h3>
+        <div class="document-modal-content">
+          <div *ngIf="selectedPropertyDocument.isImage; else noDocument">
+            <img [src]="selectedPropertyDocument.content"
+                 alt="Property Document"
+                 class="document-image"
+                 (error)="selectedPropertyDocument.isImage = false; selectedPropertyDocument.content = 'Failed to load image. The document may be corrupted or in an unsupported format.'">
+          </div>
+          <ng-template #noDocument>
+            <pre>{{ selectedPropertyDocument.content }}</pre>
+          </ng-template>
+        </div>
+        <div class="modal-actions">
+          <button (click)="closeDocumentModal()" class="close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

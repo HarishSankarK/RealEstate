@@ -1,0 +1,257 @@
+<div class="homepage-container">
+  <header class="homepage-header">
+    <h1>RealEstateHub</h1>
+    <div class="user-actions">
+      <ng-container *ngIf="currentUserEmail">
+        <span class="user-email">{{ currentUserEmail }}</span>
+        <button class="my-properties-btn" (click)="goToMyProperties()">My Properties</button>
+        <button class="profile-btn" (click)="navigateToProfile()" title="View Profile">
+          <i class="fas fa-user"></i>
+        </button>
+        <button (click)="signOut()" class="signout-btn">Sign Out</button>
+        <i class="fas fa-bell notification-icon" title="Notifications" (click)="toggleNotificationPanel()">
+          @if (unreadNotificationsCount > 0) {
+            <span class="badge">{{ unreadNotificationsCount }}</span>
+          }
+        </i>
+        <i class="fas fa-comment chat-icon" title="Chat" (click)="toggleChatPanel()">
+          @if (newMessagesCount > 0) {
+            <span class="badge">{{ newMessagesCount }}</span>
+          }
+        </i>
+      </ng-container>
+    </div>
+  </header>
+  <section class="hero-section" [@fadeIn]>
+    <div class="hero-content">
+      <h2 class="hero-title">Discover Your Dream Property</h2>
+      <p class="hero-subtitle">Explore, list, or book stunning properties with ease.</p>
+      <div class="search-bar">
+        <input [(ngModel)]="searchQuery" placeholder="Search by location or title..." (input)="filterProperties()" />
+        <button class="search-btn" (click)="filterProperties()">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+      <div class="filters-container">
+        <div class="filter-group">
+          <select [(ngModel)]="filters.propertyType" (ngModelChange)="filterProperties()" class="filter-select">
+            <option value="">All Types</option>
+            @for (type of propertyTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-group">
+          <select [(ngModel)]="filters.minPrice" (ngModelChange)="updateFilters()" class="filter-select">
+            <option value="0">Any Price</option>
+            @for (range of priceRanges; track range) {
+              <option [value]="range.min">{{ range.label }}</option>
+            }
+          </select>
+        </div>
+        <button (click)="navigateTo('home')" class="hero-btn list-btn">List Property</button>
+        <button (click)="navigateTo('landlord')" class="hero-btn post-btn">Post Property</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="properties-section" [@slideIn]>
+    <h3 style="color: aliceblue; font-size: 48px; font-weight: 700; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.6);">Featured Properties</h3>
+    @if (favoriteProperties.length === 0) {
+      <p style="color: aliceblue; text-align: center;">No favorited properties found. Add some properties to your favorites!</p>
+    }
+    <div class="properties-grid">
+      @for (property of favoriteProperties; track property._id) {
+        <div class="property-card" [@fadeIn]>
+          <img [src]="property.image || 'https://via.placeholder.com/300x200'" alt="{{ property.title }}" (error)="onImageError($event, property)" />
+          <div class="property-info">
+            <h4>{{ property.title }}</h4>
+            <p><i class="fas fa-dollar-sign"></i> {{ property.price | currency:'₹' }}</p>
+            <p><i class="fas fa-map-marker-alt"></i> {{ property.location }}</p>
+            <div class="property-actions">
+              <button (click)="toggleFavorite(property)" [class.favorited]="isFavorited(property._id)">
+                <i class="fas fa-heart"></i>
+              </button>
+              <button (click)="toggleCompare(property)" [disabled]="compareProperties.length >= 3 && !isInCompare(property._id)">
+                <i class="fas fa-balance-scale"></i>
+              </button>
+              @if (property.availability === 'available') {
+                <button (click)="bookNow(property)">Book Now</button>
+              } @else if (property.availability === 'booked' && property.postedByEmail === currentUserEmail) {
+                <button disabled>Booked</button>
+              }
+              @if (property.availability === 'booked' && property.postedByEmail !== currentUserEmail) {
+                <button (click)="payNow(property)" *ngIf="isBookingAccepted(property)">Pay Now</button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Contact Us Section -->
+  <section class="contact-us-section" [@slideIn]>
+    <h3 class="contact-us-title">Get in Touch with Us</h3>
+    <p class="contact-us-subtitle">Have questions or need assistance? We're here to help!</p>
+    <div class="contact-us-form-container">
+      <form [formGroup]="contactForm" (ngSubmit)="sendContactMessage()" class="contact-us-form">
+        <div class="form-group">
+          <input type="text" formControlName="name" placeholder="Your Name" class="contact-input" required />
+          <div *ngIf="contactForm.get('name')?.invalid && contactForm.get('name')?.touched" class="error-message">
+            Name is required.
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="email" formControlName="email" placeholder="Your Email" class="contact-input" required />
+          <div *ngIf="contactForm.get('email')?.invalid && contactForm.get('email')?.touched" class="error-message">
+            <div *ngIf="contactForm.get('email')?.errors?.['required']">Email is required.</div>
+            <div *ngIf="contactForm.get('email')?.errors?.['email']">Please enter a valid email.</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <textarea formControlName="message" placeholder="Your Message" class="contact-textarea" rows="5" required></textarea>
+          <div *ngIf="contactForm.get('message')?.invalid && contactForm.get('message')?.touched" class="error-message">
+            Message is required.
+          </div>
+        </div>
+        <button type="submit" class="contact-submit-btn" [disabled]="contactForm.invalid || isSubmitting">
+          {{ isSubmitting ? 'Sending...' : 'Send Message' }}
+        </button>
+        <div *ngIf="submitMessage" class="submit-message" [ngClass]="{'success': submitSuccess, 'error': !submitSuccess}">
+          {{ submitMessage }}
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Compare Panel -->
+  @if (showComparePanel) {
+    <div class="compare-panel">
+      <h3>Compare Properties</h3>
+      <div class="compare-grid">
+        @for (property of compareProperties; track property._id) {
+          <div class="compare-item">
+            <img [src]="property.image || 'https://via.placeholder.com/100x100'" alt="{{ property.title }}" />
+            <div class="compare-info">
+              <h4>{{ property.title }}</h4>
+              <p>{{ property.location }}</p>
+              <p>{{ property.price | currency:'₹' }}</p>
+            </div>
+            <button (click)="removeFromCompare(property._id)" class="remove-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        }
+      </div>
+      <button class="clear-btn" (click)="clearCompare()">Clear All</button>
+    </div>
+  }
+
+  <!-- Booking Popup -->
+  @if (showBookingPopup) {
+    <div class="booking-popup">
+      <h3>Confirm Booking</h3>
+      <p>Property: {{ selectedProperty?.title }}</p>
+      <p>Price: {{ selectedProperty?.price | currency:'₹' }}</p>
+      <button (click)="confirmBooking()">Confirm</button>
+      <button (click)="cancelBooking()">Cancel</button>
+    </div>
+  }
+
+  <!-- Notification Panel -->
+  @if (showNotificationPanel) {
+    <div class="notification-panel">
+      <h3>Notifications</h3>
+      <div class="notification-items">
+        @for (notification of notifications; track notification.createdAt) {
+          <div class="notification-item" [ngClass]="notification.type">
+            <p>{{ notification.message }}</p>
+            <span>{{ notification.createdAt | date:'medium' }}</span>
+            @if (notification.type === 'booking' && notification.message.includes('accepted')) {
+              <button (click)="payNow(selectedProperty!)" class="pay-now-btn">Pay Now</button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Chat Panel -->
+  @if (showChatPanel) {
+    <div class="chat-panel">
+      <div class="chat-sidebar">
+        <h3>Chats</h3>
+        <div class="chat-items">
+          @for (chat of chats; track chat._id) {
+            <div class="chat-item" (click)="selectChat(chat)" [class.active]="selectedChat && chat._id === selectedChat._id">
+              <div class="avatar" [style.background]="getAvatarGradient(chat)"></div>
+              <div class="chat-info">
+                <p class="chat-name">{{ getOtherParticipant(chat) }}</p>
+                <p class="chat-preview">
+                  {{ (chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text : 'No messages') | slice:0:20 }}{{ chat.messages.length > 0 ? '...' : '' }}
+                </p>
+              </div>
+              <button class="delete-btn" (click)="deleteChat(chat._id); $event.stopPropagation()">
+                <i class="fas fa-trash"></i>
+              </button>
+              @if (chat.unreadMessages && chat.unreadMessages > 0) {
+                <span class="unread-badge">{{ chat.unreadMessages }}</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+      @if (selectedChat) {
+        <div class="chat-main">
+          <div class="chat-header">
+            <h3>Chatting with {{ getOtherParticipant(selectedChat) }}</h3>
+            <button class="close-btn" (click)="showChatPanel = false">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          @if (selectedChat.propertyDetails) {
+            <div class="property-details-section">
+              <div class="property-details-content">
+                <div class="property-details-image-wrapper">
+                  <img [src]="selectedChat.propertyDetails.image" alt="{{ selectedChat.propertyDetails.title }}" class="property-details-image" (error)="onImageError($event, selectedChat.propertyDetails)" />
+                  <div class="image-glow"></div>
+                </div>
+                <div class="property-details-text">
+                  <h4>{{ selectedChat.propertyDetails.title }}</h4>
+                  <div class="property-details-info">
+                    <p><i class="fas fa-dollar-sign"></i> {{ selectedChat.propertyDetails.price | currency:'₹' }}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> {{ selectedChat.propertyDetails.location }}</p>
+                    <p><i class="fas fa-tag"></i> {{ selectedChat.propertyDetails.category || 'N/A' }}</p>
+                    <p><i class="fas fa-bed"></i> {{ selectedChat.propertyDetails.bedrooms }} Bedrooms</p>
+                    <p><i class="fas fa-bath"></i> {{ selectedChat.propertyDetails.bathrooms }} Bathrooms</p>
+                    <p><i class="fas fa-ruler-combined"></i> {{ selectedChat.propertyDetails.area }} m²</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+          <div class="chat-messages">
+            @for (message of selectedChat.messages; track message.createdAt) {
+              <div class="message" [ngClass]="{'sent': message.sender === currentUserEmail, 'received': message.sender !== currentUserEmail}">
+                <div class="message-content">
+                  <p>{{ message.text }}</p>
+                  <span class="message-time">{{ message.createdAt | date:'shortTime' }}</span>
+                </div>
+                <div class="message-glow"></div>
+              </div>
+            }
+          </div>
+          <div class="chat-input">
+            <textarea [(ngModel)]="newMessage" placeholder="Type a message..." rows="1" (keyup.enter)="sendMessage()" (input)="autoResize($event)"></textarea>
+            <button class="send-btn" (click)="sendMessage()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="send-icon">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

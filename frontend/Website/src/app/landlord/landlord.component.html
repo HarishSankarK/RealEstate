@@ -1,0 +1,136 @@
+<div class="landlord-container">
+  <div class="category-popup" *ngIf="showPopup">
+    <div class="popup-content">
+      <h2>Select Property Category</h2>
+      <p>Choose whether you want to list your property for buying or renting.</p>
+      <div class="category-buttons">
+        <button (click)="selectCategory('Buy')" class="category-btn buy-btn">Buy</button>
+        <button (click)="selectCategory('Rent')" class="category-btn rent-btn">Rent</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-wrapper" *ngIf="!showPopup">
+    <h2>Post a Property ({{ selectedCategory }})</h2>
+    <form #propertyForm="ngForm" (ngSubmit)="onSubmit()" class="landlord-form">
+      <div class="form-section">
+        <h3>Basic Details</h3>
+        <div class="form-group">
+          <label for="propertyID">Property ID</label>
+          <input type="text" id="propertyID" [(ngModel)]="property.propertyID" name="propertyID" required placeholder="e.g., PROP-001">
+        </div>
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" id="title" [(ngModel)]="property.title" name="title" required placeholder="e.g., Modern 2BHK Apartment">
+        </div>
+        <div class="form-group">
+          <label for="price">Price (in ₹)</label>
+          <input type="number" id="price" [(ngModel)]="property.price" name="price" required min="0" placeholder="e.g., 1500">
+        </div>
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input type="text" id="location" [(ngModel)]="property.location" name="location" required placeholder="e.g., Downtown, New York">
+        </div>
+        <div class="form-group">
+          <label for="image">Upload Image</label>
+          <input type="file" id="image" (change)="onFileChange($event, 'image')" accept="image/*" required>
+          <img *ngIf="previewImage" [src]="previewImage" alt="Preview" class="image-preview">
+        </div>
+        <div class="form-group">
+          <label for="propertyDocument">Upload Property Document</label>
+          <input type="file" id="propertyDocument" (change)="onFileChange($event, 'propertyDocument')" accept="image/*" required>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Property Specifications</h3>
+        <div class="form-group">
+          <label for="propertyType">Property Type</label>
+          <select id="propertyType" [(ngModel)]="property.propertyType" name="propertyType" required>
+            <option value="" disabled selected>Select Property Type</option>
+            <option value="Single Family Home">Single Family Home</option>
+            <option value="Condo/Townhouse">Condo/Townhouse</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Commercial">Commercial</option>
+            <option value="Land">Land</option>
+            <option value="Multi-Family">Multi-Family</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="bedrooms">Bedrooms</label>
+          <input type="number" id="bedrooms" [(ngModel)]="property.bedrooms" name="bedrooms" min="0" required placeholder="e.g., 2">
+        </div>
+        <div class="form-group">
+          <label for="bathrooms">Bathrooms</label>
+          <input type="number" id="bathrooms" [(ngModel)]="property.bathrooms" name="bathrooms" min="0" required placeholder="e.g., 1">
+        </div>
+        <div class="form-group">
+          <label for="area">Area (sq.ft.)</label>
+          <input type="number" id="area" [(ngModel)]="property.area" name="area" min="1" required placeholder="e.g., 800">
+        </div>
+        <div class="form-group">
+          <label for="furnishing">Furnishing</label>
+          <select id="furnishing" [(ngModel)]="property.furnishing" name="furnishing" required>
+            <option value="" disabled selected>Select Furnishing</option>
+            <option value="Furnished">Furnished</option>
+            <option value="Semi-Furnished">Semi-Furnished</option>
+            <option value="Unfurnished">Unfurnished</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="availability">Availability</label>
+          <input type="text" id="availability" [(ngModel)]="property.availability" name="availability" required placeholder="e.g., Immediate">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="ownerName">Owner Name:</label>
+        <input type="text" id="ownerName" [(ngModel)]="property.ownerName" name="ownerName" />
+      </div>
+      <div class="form-group">
+        <label for="ownerPhone">Owner Phone:</label>
+        <input type="text" id="ownerPhone" [(ngModel)]="property.ownerPhone" name="ownerPhone" />
+      </div>
+
+      <div class="form-section buy-section" *ngIf="selectedCategory === 'Buy'">
+        <h3>Additional Details for Buying</h3>
+        <div class="form-group">
+          <label for="yearBuilt">Year Built</label>
+          <input type="number" id="yearBuilt" [(ngModel)]="property.yearBuilt" name="yearBuilt" min="1800" max="2025" required placeholder="e.g., 2015">
+        </div>
+        <div class="form-group">
+          <label for="parkingSpaces">Parking Spaces</label>
+          <input type="number" id="parkingSpaces" [(ngModel)]="property.parkingSpaces" name="parkingSpaces" min="0" required placeholder="e.g., 2">
+        </div>
+        <div class="form-group">
+          <label for="amenities">Amenities</label>
+          <input type="text" id="amenities" [(ngModel)]="property.amenities" name="amenities" required placeholder="e.g., Pool, Gym, Garden">
+        </div>
+      </div>
+
+      <div class="form-section rent-section" *ngIf="selectedCategory === 'Rent'">
+        <h3>Additional Details for Renting</h3>
+        <div class="form-group">
+          <label for="leaseDuration">Lease Duration</label>
+          <input type="text" id="leaseDuration" [(ngModel)]="property.leaseDuration" name="leaseDuration" placeholder="e.g., 12 months" required>
+        </div>
+        <div class="form-group">
+          <label for="deposit">Deposit (in ₹)</label>
+          <input type="number" id="deposit" [(ngModel)]="property.deposit" name="deposit" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="petPolicy">Pet Policy</label>
+          <input type="text" id="petPolicy" [(ngModel)]="property.petPolicy" name="petPolicy" required placeholder="e.g., Pets Allowed">
+        </div>
+        <div class="form-group">
+          <label for="maintenanceFee">Maintenance Fee (in ₹)</label>
+          <input type="number" id="maintenanceFee" [(ngModel)]="property.maintenanceFee" name="maintenanceFee" min="0" required>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="!propertyForm.valid">Post Property</button>
+    </form>
+
+    <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }} <span *ngIf="errorMessage.includes('Status')">[Details in console]</span></div>
+  </div>
+</div>
